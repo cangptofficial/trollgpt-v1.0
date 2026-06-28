@@ -1,7 +1,6 @@
 import os
 import random
 import gradio as gr
-from fastapi import FastAPI
 
 # Troll cevap havuzumuz
 TROLL_RESPONSES = [
@@ -16,21 +15,18 @@ TROLL_RESPONSES = [
 def troll_chat(message, history):
     return random.choice(TROLL_RESPONSES)
 
-# Gradio Arayüzü
-io = gr.ChatInterface(
-    fn=troll_chat,
-    title="Troll GPT v1",
-    description="Her soruya en doğru ve en net cevabı veren yapay zeka (!) sfsjsjjs",
-    theme="soft"
-)
-
-# FastAPI uygulamasını başlatıyoruz
-app = FastAPI()
-
-# Gradio'yu FastAPI içine gömüyoruz (Bağlantı kopmalarını engeller)
-app = gr.mount_gradio_app(app, io, path="/")
+# ssr=False ve queue(default_concurrency_limit=None) ayarları websoket zorunluluğunu esnetir
+with gr.Blocks() as demo:
+    gr.Markdown("# Troll GPT v1\nHer soruya en doğru ve en net cevabı veren yapay zeka (!) sfsjsjjs")
+    gr.ChatInterface(fn=troll_chat, theme="soft")
 
 if __name__ == "__main__":
-    import uvicorn
     port = int(os.environ.get("PORT", 7860))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    
+    # queue=False yaparak Render'ın nefret ettiği o canlı websocket kuyruğunu tamamen kapatıyoruz!
+    demo.launch(
+        server_name="0.0.0.0", 
+        server_port=port, 
+        show_error=True,
+        queue=False
+    )
