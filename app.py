@@ -1,6 +1,7 @@
 import os
 import random
 import gradio as gr
+from fastapi import FastAPI
 
 # Troll cevap havuzumuz
 TROLL_RESPONSES = [
@@ -13,21 +14,23 @@ TROLL_RESPONSES = [
 ]
 
 def troll_chat(message, history):
-    # Gelen mesaja hiç bakmadan direkt rastgele bir troll cevap yapıştırıyoruz
     return random.choice(TROLL_RESPONSES)
 
-# Gradio Sohbet Arayüzü Ayarları
-demo = gr.ChatInterface(
+# Gradio Arayüzü
+io = gr.ChatInterface(
     fn=troll_chat,
     title="Troll GPT v1",
     description="Her soruya en doğru ve en net cevabı veren yapay zeka (!) sfsjsjjs",
-    examples=["Naber?", "Python nedir?", "En iyi oyun hangisi?"],
     theme="soft"
 )
 
+# FastAPI uygulamasını başlatıyoruz
+app = FastAPI()
+
+# Gradio'yu FastAPI içine gömüyoruz (Bağlantı kopmalarını engeller)
+app = gr.mount_gradio_app(app, io, path="/")
+
 if __name__ == "__main__":
-    # Render'ın portunu yakalamak için gerekli ayar
+    import uvicorn
     port = int(os.environ.get("PORT", 7860))
-    
-    # Render üzerinde sorunsuz çalışması için server_name='0.0.0.0' olmalı
-    demo.launch(server_name="0.0.0.0", server_port=port)
+    uvicorn.run(app, host="0.0.0.0", port=port)
