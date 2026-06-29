@@ -2,13 +2,6 @@ import os
 import random
 import gradio as gr
 
-# --- GRADIO KILL SWITCH HACK ---
-# Render'ın network engeline takılan o salak self-ping kontrolünü tamamen devre dışı bırakıyoruz.
-# Bu iki satır "When localhost is not accessible" hatasını tarihe gömer.
-import gradio.networking
-gradio.networking.url_ok = lambda *args, **kwargs: True
-# -------------------------------
-
 # Troll cevap havuzumuz
 TROLL_RESPONSES = [
     "Ben bilmem, git Gemini'a sor!",
@@ -22,15 +15,19 @@ TROLL_RESPONSES = [
 def troll_chat(message, history):
     return random.choice(TROLL_RESPONSES)
 
-with gr.Blocks(theme="soft") as demo:
-    gr.Markdown("# Troll GPT v1\nHer soruya en doğru ve en net cevabı veren yapay zeka (!) sfsjsjjs")
-    gr.ChatInterface(fn=troll_chat)
+# Gradio 5'in en stabil ve temiz chat arayüzü
+demo = gr.ChatInterface(
+    fn=troll_chat,
+    title="Troll GPT v1",
+    description="Her soruya en doğru ve en net cevabı veren yapay zeka (!) sfsjsjjs"
+)
 
 if __name__ == "__main__":
+    # Render'ın verdiği portu otomatik alır
     port = int(os.environ.get("PORT", 7860))
     
+    # Hata verebilecek tüm ekstra parametreleri temizledik
     demo.launch(
         server_name="0.0.0.0", 
-        server_port=port, 
-        show_error=True
+        server_port=port
     )
