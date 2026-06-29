@@ -13,19 +13,36 @@ TROLL_RESPONSES = [
 ]
 
 def troll_chat(message, history):
-    return random.choice(TROLL_RESPONSES)
+    if history is None:
+        history = []
+    
+    bot_response = random.choice(TROLL_RESPONSES)
+    
+    # Gradio 5'in modern mesaj formatı
+    history.append({"role": "user", "content": message})
+    history.append({"role": "assistant", "content": bot_response})
+    
+    # İlk değer mesaj kutusunu temizler, ikinci değer sohbet geçmişini günceller
+    return "", history
 
+# ChatInterface yerine Blocks kullanarak Render dostu bir yapı kuruyoruz
 with gr.Blocks(theme="soft") as demo:
     gr.Markdown("# Troll GPT v1\nHer soruya en doğru ve en net cevabı veren yapay zeka (!) sfsjsjjs")
-    gr.ChatInterface(fn=troll_chat)
+    
+    chatbot = gr.Chatbot(type="messages")
+    msg = gr.Textbox(placeholder="Bir şeyler yaz ve Enter'a bas...")
+    
+    # Tetikleyici (Enter'a basınca çalışır)
+    msg.submit(fn=troll_chat, inputs=[msg, chatbot], outputs=[msg, chatbot])
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 7860))
     
-    # queue=False parametresini kaldırdık. 
-    # .queue() metodunu çağırmadığımız için Render'ın istediği gibi kuyruk zaten kapalı çalışacak.
+    # queue=False parametresi Gradio 5'te custom Blocks ile mükemmel çalışır.
+    # Render'ın nefret ettiği tüm arka plan canlı bağlantılarını (SSE/WebSocket) tamamen kapatır.
     demo.launch(
         server_name="0.0.0.0", 
         server_port=port, 
-        show_error=True
+        show_error=True,
+        queue=False
     )
