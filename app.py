@@ -12,22 +12,22 @@ TROLL_RESPONSES = [
     "Yahu her şeyi bana sormaktan bıkmadınız mı? Git Gemini'a yaz."
 ]
 
+# Gradio 4'te chat fonksiyonu sadece botun vereceği metni (string) döner, gerisini arayüz halleder.
 def troll_chat(message, history):
     return random.choice(TROLL_RESPONSES)
 
-# Gradio 5.x uyumlu ChatInterface yapısı
-with gr.Blocks() as demo:
+# O sade ve şık ChatInterface yapısına geri döndük
+with gr.Blocks(theme="soft") as demo:
     gr.Markdown("# Troll GPT v1\nHer soruya en doğru ve en net cevabı veren yapay zeka (!) sfsjsjjs")
-    gr.ChatInterface(fn=troll_chat, theme="soft")
+    gr.ChatInterface(fn=troll_chat)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 7860))
     
-    # launch() içindeki queue=False parametresini kaldırdık.
-    # Gradio 5 artık WebSocket yerine Render dostu SSE (Server-Sent Events) kullandığı için
-    # canlı kuyruk açık olsa bile Render üzerinde bağlantı hatası vermez.
+    # queue=False Gradio 4'te hata vermez, aksine Render'ın bağlantıyı koparmasını ENGELLER.
     demo.launch(
         server_name="0.0.0.0", 
         server_port=port, 
-        show_error=True
+        show_error=True,
+        queue=False
     )
